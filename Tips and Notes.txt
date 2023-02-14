@@ -1,0 +1,57 @@
+/////////////////////////**********************///////////************************///////////////////////////////////////
+**********************************  CREACION DE SQL *****************************************************************************
+/////////////////////////**********************///////////***********************////////////////////////////////////////
+
+- Creamos con docker una base de datos mysql: user: root ; password:passwordsql
+- En consola nos loggeamos y comenzamos a crear la tabla con: CREATE DATABASE usersdb
+- Y ahora para entrar a la base y comenzar a usarla: use usersdb
+
+-podemos usar createPool o createConnection, para conectarnos con nuetsra base de datos, sin embargo createConnection devuelve una promesa y es necesario
+ trabajar con el await, mientras que createPool ya nos da acceso al query y nos permite tener multiples conexiones.
+
+const { createPool } = require("mysql2/promise");
+
+const pool = createPool({
+  user: "root",
+  password: "passwordsql",
+  host: "localhost",
+  port: 3307, // Aqui se coloca el puerto del hardware
+  database: "usersdb",
+});
+
+//Nombre Container: sqlleo
+//Port Container Hardware: 3307
+//Port Container Docker: 3306
+
+module.exports = pool;
+
+
+- Ahora utilizamos la este sql en un CRUD de la api:
+
+routerApp.get("/ping", async (req, res) => {
+  const [result] = await pool.query(`SELECT "hello world" as RESULT`);
+  console.log(result);
+  res.send("Dentro del ping");
+});
+
+
+- Para crear una tabla en mysql:
+CREATE TABLE users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL
+);
+- y para verificar si se creo: show tables;
+- Ahora despues de haber creado la tabla, podemos crear datos desde nuestro CRUD:
+
+routerApp.get("/create", async (req, res) => {
+  const result = await pool.query('INSERT INTO users(name) VALUES ("jhon")');
+  res.send(result);
+});
+
+- Para verificar en consola si se creo el nuevo dato: SELECT * FROM users;
+
+/////////////////////////**********************///////////************************///////////////////////////////////////
+**********************************  PREPARACION DEL DOCUMENTO PARA PRODUCCION *****************************************************************************
+/////////////////////////**********************///////////***********************////////////////////////////////////////
+
+- Se crea las variables de entorno con .env o config.js
